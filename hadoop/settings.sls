@@ -3,6 +3,17 @@
 {% set g  = salt['grains.get']('hadoop', {}) %}
 {% set gc = g.get('config', {}) %}
 
+{% macro set_dist_info(name="apache", versions=[]) -%}
+    {% for version in versions -%}
+        name + '-' + version : { 'version': version,
+                        'version_name' : 'hadoop-' + version',
+                        'source_url'    : g.get('source_url', p.get('source_url', 'http://archive.apache.org/dist/hadoop/core/hadoop-' + version + 'hadoop-' + version + '.tar.gz')),
+                        'source_hash'   : g.get('source_hash', p.get('source_hash', '')),
+                        'major_version' : version.split('.')[0]
+                      },
+    {%- endfor %}
+{%- endmacro %}
+
 {%- set versions = {} %}
 {%- set default_dist_id = 'apache-2.2.0' %}
 {%- set dist_id = g.get('version', p.get('version', default_dist_id)) %}
@@ -13,18 +24,7 @@
                                         'source_hash'   : g.get('source_hash', p.get('source_hash', '')),
                                         'major_version' : '1'
                                       },
-                     'apache-2.2.0' : { 'version'       : '2.2.0',
-                                        'version_name'  : 'hadoop-2.2.0',
-                                        'source_url'    : g.get('source_url', p.get('source_url', 'http://archive.apache.org/dist/hadoop/core/hadoop-2.2.0/hadoop-2.2.0.tar.gz')),
-                                        'source_hash'   : g.get('source_hash', p.get('source_hash', '')),
-                                        'major_version' : '2'
-                                      },
-                     'apache-2.3.0' : { 'version'       : '2.3.0',
-                                        'version_name'  : 'hadoop-2.3.0',
-                                        'source_url'    : g.get('source_url', p.get('source_url', 'http://archive.apache.org/dist/hadoop/core/hadoop-2.3.0/hadoop-2.3.0.tar.gz')),
-                                        'source_hash'   : g.get('source_hash', p.get('source_hash', '')),
-                                        'major_version' : '2'
-                                      },
+                            set_dist_info("apache", versions=["2.2.0", "2.3.0"])
                      'apache-2.4.0' : { 'version'       : '2.4.0',
                                         'version_name'  : 'hadoop-2.4.0',
                                         'source_url'    : g.get('source_url', p.get('source_url', 'http://archive.apache.org/dist/hadoop/core/hadoop-2.4.0/hadoop-2.4.0.tar.gz')),
