@@ -4,22 +4,23 @@
 {% set gc = g.get('config', {}) %}
 
 {% macro set_dist_info(name="apache", versions=[]) -%}
+    {% set d = {} %}
     {% for version in versions -%}
-        {{name}} + '-' + {{version}} : { 'version': {{version}},
+        d[{{name}} + '-' + {{version}}] = { 'version': {{version}},
                         'version_name' : 'hadoop-' + {{version}},
                         'source_url'    : g.get('source_url', p.get('source_url', 'http://archive.apache.org/dist/hadoop/core/hadoop-' + {{version}} + 'hadoop-' + {{version}} + '.tar.gz')),
                         'source_hash'   : g.get('source_hash', p.get('source_hash', '')),
                         'major_version' : {{version.split('.')[0]}}
-                      },
+                      }
     {%- endfor %}
+    {{d}}
 {%- endmacro %}
 
 {%- set versions = {} %}
 {%- set default_dist_id = 'apache-2.2.0' %}
 {%- set dist_id = g.get('version', p.get('version', default_dist_id)) %}
 
-{%- set default_versions = { {{ set_dist_info("apache", versions=["2.2.0", "2.3.0"]) }}
-                   }%}
+{%- set default_versions = set_dist_info("apache", versions=["2.2.0", "2.3.0"]) %}
 
 {%- set versions         = p.get('versions', default_versions) %}
 {%- set version_info     = versions.get(dist_id, versions['apache-2.7.1']) %}
