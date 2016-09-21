@@ -135,22 +135,24 @@
 
 {%- set versions         = p.get('versions', default_versions) %}
 {%- set version_info     = versions.get(dist_id, versions['apache-2.7.3']) %}
-{%- set alt_home         = salt['pillar.get']('hadoop:prefix', '/usr/lib/hadoop') %}
-{%- set real_home        = '/usr/lib/' + version_info['version_name'] %}
-{%- set alt_config       = gc.get('directory', pc.get('directory', '/etc/hadoop/conf')) %}
-{%- set real_config      = alt_config + '-' + version_info['version'] %}
-{%- set real_config_dist = alt_config + '.dist' %}
-{%- set default_log_root = '/var/log/hadoop' %}
-{%- set log_root         = gc.get('log_root', pc.get('log_root', default_log_root)) %}
+{#- set alt_home         = salt['pillar.get']('hadoop:prefix', '/usr/lib/hadoop') #}
+{%- set hadoop_prefix    = g.get('prefix', p.get('prefix', '/usr/lib/hadoop')) %}
+{#- set real_home        = '/usr/lib/' + version_info['version_name'] #}
+{%- set hadoop_config    = gc.get('directory', pc.get('directory', '/etc/hadoop')) %}
+{#- set alt_config       = gc.get('directory', pc.get('directory', '/etc/hadoop/conf')) #}
+{#- set real_config      = alt_config + '-' + version_info['version'] #}
+{#- set real_config_dist = alt_config + '.dist' #}
+{#- set default_log_root = '/var/log/hadoop' #}
+{%- set log_root         = gc.get('log_root', pc.get('log_root', '/var/log/hadoop')) %}
 {%- set initscript       = 'hadoop.init' %}
 {%- set targeting_method = g.get('targeting_method', p.get('targeting_method', 'grain')) %}
 
 {%- if version_info['major_version'] == '1' %}
-{%- set dfs_cmd = alt_home + '/bin/hadoop dfs' %}
-{%- set dfsadmin_cmd = alt_home + '/bin/hadoop dfsadmin' %}
+    {%- set dfs_cmd = hadoop_prefix ~ '/bin/hadoop dfs' %}
+    {%- set dfsadmin_cmd = hadoop_prefix ~ '/bin/hadoop dfsadmin' %}
 {%- else %}
-{%- set dfs_cmd = alt_home + '/bin/hdfs dfs' %}
-{%- set dfsadmin_cmd = alt_home + '/bin/hdfs dfsadmin' %}
+    {%- set dfs_cmd = hadoop_prefix ~ '/bin/hdfs dfs' %}
+    {%- set dfsadmin_cmd = hadoop_prefix ~ '/bin/hdfs dfsadmin' %}
 {%- endif %}
 
 {%- set java_home_pillar = p.get('java_home_pillar', 'java:java_home') %}
@@ -165,17 +167,13 @@
                           'source_url'       : version_info['source_url'],
                           'source_hash'      : version_info['source_hash'],
                           'major_version'    : version_info['major_version']|string(),
-                          'alt_home'         : alt_home,
-                          'real_home'        : real_home,
-                          'alt_config'       : alt_config,
-                          'real_config'      : real_config,
-                          'real_config_dist' : real_config_dist,
+                          'hadoop_prefix'    : hadoop_prefix,
+                          'hadoop_config'    : hadoop_config,
                           'initscript'       : initscript,
                           'dfs_cmd'          : dfs_cmd,
                           'dfsadmin_cmd'     : dfsadmin_cmd,
                           'java_home'        : java_home,
                           'log_root'         : log_root,
-                          'default_log_root' : default_log_root,
                           'config_core_site' : config_core_site,
-                          'targeting_method': targeting_method,
+                          'targeting_method' : targeting_method,
                       }) %}
