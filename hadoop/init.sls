@@ -51,7 +51,7 @@ unpack-hadoop-dist:
   cmd.run:
     - name: curl '{{ hadoop.source_url }}' | tar xz --no-same-owner
     - cwd: /usr/lib
-    - unless: test -d {{ hadoop['real_home'] }}/lib
+    - unless: test -d {{ hadoop['prefix'] }}/lib
 {%- endif %}
     - require_in:
       - alternatives: hadoop-home-link
@@ -60,34 +60,28 @@ unpack-hadoop-dist:
       - alternatives: mapred-bin-link
       - alternatives: yarn-bin-link
 
-hadoop-home-link:
-  alternatives.install:
-    - link: {{ hadoop['alt_home'] }}
-    - path: {{ hadoop['real_home'] }}
-    - priority: 30
-
 hadoop-bin-link:
   alternatives.install:
     - link: /usr/bin/hadoop
-    - path: {{ hadoop['alt_home'] }}/bin/hadoop
+    - path: {{ hadoop.prefix }}/bin/hadoop
     - priority: 30
 
 hdfs-bin-link:
   alternatives.install:
     - link: /usr/bin/hdfs
-    - path: {{ hadoop['alt_home'] }}/bin/hdfs
+    - path: {{ hadoop.prefix }}/bin/hdfs
     - priority: 30
 
 mapred-bin-link:
   alternatives.install:
     - link: /usr/bin/mapred
-    - path: {{ hadoop['alt_home'] }}/bin/mapred
+    - path: {{ hadoop.prefix }}/bin/mapred
     - priority: 30
 
 yarn-bin-link:
   alternatives.install:
     - link: /usr/bin/yarn
-    - path: {{ hadoop['alt_home'] }}/bin/yarn
+    - path: {{ hadoop.prefix }}/bin/yarn
     - priority: 30
 
 {%- if hadoop.cdhmr1 %}
@@ -117,7 +111,7 @@ rename-config:
     - target: {{ hadoop.alt_home }}/etc/hadoop-mapreduce1
     - force: True
 
-{% endif %}
+{%- endif %}
 
 /etc/profile.d/hadoop.sh:
   file.managed:
@@ -127,59 +121,16 @@ rename-config:
     - user: root
     - group: root
     - context:
-      hadoop_config: {{ hadoop['alt_config'] }}
-      alt_home: {{ hadoop.get('alt_home', '/usr/lib/hadoop') }}
+      hadoop_home: {{ hadoop.prefix }}
+      hadoop_config: {{ hadoop.config_dir }}
 
-{% if (hadoop['major_version'] == '1') and not hadoop.cdhmr1 %}
-{% set real_config_src = hadoop['real_home'] + '/conf' %}
-{% else %}
-{% set real_config_src = hadoop['real_home'] + '/etc/hadoop' %}
-{% endif %}
-
-/etc/hadoop:
+{{ hadoop.config_dir }}:
   file.directory:
     - user: root
     - group: root
     - mode: 755
 
-move-hadoop-dist-conf:
-  file.directory:
-    - name: {{ hadoop['real_config'] }}
-    - user: root
-    - group: root
-  cmd.run:
-    - name: mv  {{ real_config_src }} {{ hadoop.real_config_dist }}
-    - unless: test -d {{ hadoop.real_config_dist }}
-    - onlyif: test -d {{ real_config_src }}
-    - require:
-      - file: /etc/hadoop
-
-{{ real_config_src }}:
-  file.symlink:
-    - target: {{ hadoop['alt_config'] }}
-    - force: true
-    - require:
-      - cmd: move-hadoop-dist-conf
-
-hadoop-conf-link:
-  alternatives.install:
-    - link: {{ hadoop['alt_config'] }}
-    - path: {{ hadoop['real_config'] }}
-    - priority: 30
-    - require:
-      - file: {{ hadoop['real_config'] }}
-
-{{ hadoop['real_config'] }}/log4j.properties:
-  file.copy:
-    - source: {{ hadoop['real_config_dist'] }}/log4j.properties
-    - user: root
-    - group: root
-    - mode: 644
-    - require:
-      - file: {{ hadoop['real_config'] }}
-      - alternatives: hadoop-conf-link
-
-{{ hadoop['real_config'] }}/hadoop-env.sh:
+{{ hadoop.config_dir }}/hadoop-env.sh:
   file.managed:
     - source: salt://hadoop/conf/hadoop-env.sh
     - template: jinja
@@ -188,8 +139,8 @@ hadoop-conf-link:
     - group: root
     - context:
       java_home: {{ hadoop.java_home }}
-      hadoop_home: {{ hadoop.alt_home }}
-      hadoop_config: {{ hadoop.alt_config }}
+      hadoop_home: {{ hadoop.prefix }}
+      hadoop_config: {{ hadoop.config_dir }}
 
 {%- if grains.os == 'Ubuntu' %}
 /etc/default/hadoop:
@@ -201,6 +152,6 @@ hadoop-conf-link:
     - group: root
     - context:
       java_home: {{ hadoop.java_home }}
-      hadoop_home: {{ hadoop.alt_home }}
-      hadoop_config: {{ hadoop.alt_config }}
+      hadoop_home: {{ hadoop.prefix }}
+      hadoop_config: {{ hadoop.config_dir }}
 {%- endif %}
