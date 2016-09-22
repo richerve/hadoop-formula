@@ -21,7 +21,7 @@ export YARN_USER=yarn
 {%- set logs = '/var/log/hadoop' %}
 {%- set pids = '/var/run/hadoop' %}
 
-export HADOOP_LOG_DIR={{ logs }}
+export HADOOP_LOG_DIR={{ hadoop_log_dir }}
 export HDFS_LOG_DIR={{ logs }}
 export MAPRED_LOG_DIR={{ logs }}
 export HADOOP_MAPRED_LOG_DIR={{ logs }}

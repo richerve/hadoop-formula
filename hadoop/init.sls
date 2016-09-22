@@ -23,12 +23,6 @@ create-common-folders:
       - group: hadoop
     - makedirs: True
 
-{%- if hadoop.log_root != hadoop.default_log_root %}
-/var/log/hadoop:
-  file.symlink:
-    - target: {{ hadoop.log_root }}
-{%- endif %}
-
 vm.swappiness:
   sysctl:
     - present
@@ -141,6 +135,7 @@ rename-config:
       java_home: {{ hadoop.java_home }}
       hadoop_home: {{ hadoop.prefix }}
       hadoop_config: {{ hadoop.config_dir }}
+      hadoop_log_dir: {{ hadoop.log_root }}
 
 {%- if grains.os == 'Ubuntu' %}
 /etc/default/hadoop:
