@@ -42,10 +42,10 @@ vm.overcommit_memory:
 unpack-hadoop-dist:
 {%- if hadoop.source_hash %}
   archive.extracted:
-    - name: /usr/lib/
+    - name: {{ hadoop['prefix'].rsplit("/", 1)[0] }}
     - source: {{ hadoop.source_url }}
     - source_hash: md5={{ hadoop.source_hash }}
-    - if_missing: /usr/lib/{{ hadoop.version_name }}
+    - if_missing: {{ hadoop.prefix }}
     - archive_format: tar
 {%- else %}
   cmd.run:
