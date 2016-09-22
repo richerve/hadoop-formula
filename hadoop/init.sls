@@ -48,7 +48,6 @@ unpack-hadoop-dist:
     - unless: test -d {{ hadoop['prefix'] }}/lib
 {%- endif %}
     - require_in:
-      - alternatives: hadoop-home-link
       - alternatives: hadoop-bin-link
       - alternatives: hdfs-bin-link
       - alternatives: mapred-bin-link
