@@ -55,24 +55,28 @@ unpack-hadoop-dist:
 
 hadoop-bin-link:
   alternatives.install:
+    - name: hadoop
     - link: /usr/bin/hadoop
     - path: {{ hadoop.prefix }}/bin/hadoop
     - priority: 30
 
 hdfs-bin-link:
   alternatives.install:
+    - name: hdfs
     - link: /usr/bin/hdfs
     - path: {{ hadoop.prefix }}/bin/hdfs
     - priority: 30
 
 mapred-bin-link:
   alternatives.install:
+    - name: mapred
     - link: /usr/bin/mapred
     - path: {{ hadoop.prefix }}/bin/mapred
     - priority: 30
 
 yarn-bin-link:
   alternatives.install:
+    - name: yarn
     - link: /usr/bin/yarn
     - path: {{ hadoop.prefix }}/bin/yarn
     - priority: 30
