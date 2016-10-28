@@ -1,0 +1,30 @@
+---
+driver:
+  name: vagrant
+
+platforms:
+  - name: Heystaks-ubuntu-16.04
+    driver:
+      box: Heystaks/ubuntu-16.04
+
+verifier:
+  name: inspec
+
+provisioner:
+  name: salt_solo
+  formula: hadoop
+  require_chef: false
+  pillars-from-files:
+    hadoop.sls: pillar.example
+  pillars:
+    top.sls:
+      base:
+        '*':
+          - hadoop
+  state_top:
+    base:
+      '*':
+        - hadoop
+
+suites:
+  - name: default

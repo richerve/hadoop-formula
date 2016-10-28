@@ -1,0 +1,5 @@
+{% import_yaml 'hadoop/defaults.yaml' as defaults %}
+
+{% do defaults.hadoop.update({"home": defaults.hadoop.install_dir ~ "/" ~ defaults.hadoop.version}) %}
+
+{% set hadoop = salt['pillar.get']('hadoop', default=defaults.hadoop, merge=True) %}

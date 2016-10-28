@@ -1,155 +1,118 @@
-{%- from 'hadoop/settings.sls' import hadoop with context %}
-{%- set hadoop_users = hadoop.get('users', {}) %}
+{%- from 'hadoop/map.jinja' import hadoop with context %}
 
-hadoop:
+hadoop_user:
+  user.present:
+    - name: {{hadoop.user}}
+    - system: true
+
+hadoop_group:
   group.present:
-    - gid: {{ hadoop_users.get('hadoop', '6000') }}
+    - name: {{hadoop.group}}
+    - system: true
 
-{%- if grains['os_family'] == 'RedHat' %}
-redhat-lsb:
-  pkg.installed
-{%- endif %}
-
-create-common-folders:
+hadoop_log_dir:
   file.directory:
-    - user: root
-    - group: hadoop
+    - name: {{hadoop.log_dir}}
+    - user: {{hadoop.user}}
+    - group: {{hadoop.group}}
     - mode: 775
-    - names:
-      - {{ hadoop.log_root }}
-      - /var/run/hadoop
-      - /var/lib/hadoop
     - require:
       - group: hadoop
     - makedirs: True
 
-vm.swappiness:
-  sysctl:
-    - present
-    - value: 0
+hadoop_run_dir:
+  file.directory:
+    - name: /var/run/hadoop
+    - user: {{hadoop.user}}
+    - group: {{hadoop.group}}
+    - mode: 775
+    - require:
+      - group: hadoop
+    - makedirs: True
 
-vm.overcommit_memory:
-  sysctl:
-    - present
-    - value: 0
+# hadoop_log_dir:
+#   file.directory:
+#     - mode: 775
+#     - names:
+#       - /var/run/hadoop
+#       - /var/lib/hadoop
+#     - require:
+#       - group: hadoop
+#     - makedirs: True
 
-unpack-hadoop-dist:
-{%- if hadoop.source_hash %}
+# vm.swappiness:
+#   sysctl:
+#     - present
+#     - value: 0
+#
+# vm.overcommit_memory:
+#   sysctl:
+#     - present
+#     - value: 0
+
+hadoop_tarball:
   archive.extracted:
-    - name: {{ hadoop['prefix'].rsplit("/", 1)[0] }}
-    - source: {{ hadoop.source_url }}
-    - source_hash: md5={{ hadoop.source_hash }}
-    - if_missing: {{ hadoop.prefix }}
+    - name: {{ hadoop.install_dir }}
+    - source: {{ hadoop.source }}
+    - source_hash: {{ hadoop.source_hash }}
+    - if_missing: {{ hadoop.home }}
     - archive_format: tar
-{%- else %}
-  cmd.run:
-    - name: curl '{{ hadoop.source_url }}' | tar xz --no-same-owner
-    - cwd: /usr/lib
-    - unless: test -d {{ hadoop['prefix'] }}/lib
-{%- endif %}
+    - user: {{hadoop.user}}
+    - group: {{hadoop.group}}
     - require_in:
-      - alternatives: hadoop-bin-link
-      - alternatives: hdfs-bin-link
-      - alternatives: mapred-bin-link
-      - alternatives: yarn-bin-link
+      - symlink: hadoop_bin_link
+      - symlink: hdfs_bin_link
+      # - alternatives: mapred-bin-link
+      # - alternatives: yarn-bin-link
 
-hadoop-bin-link:
-  alternatives.install:
-    - name: hadoop
-    - link: /usr/bin/hadoop
-    - path: {{ hadoop.prefix }}/bin/hadoop
-    - priority: 30
-
-hdfs-bin-link:
-  alternatives.install:
-    - name: hdfs
-    - link: /usr/bin/hdfs
-    - path: {{ hadoop.prefix }}/bin/hdfs
-    - priority: 30
-
-mapred-bin-link:
-  alternatives.install:
-    - name: mapred
-    - link: /usr/bin/mapred
-    - path: {{ hadoop.prefix }}/bin/mapred
-    - priority: 30
-
-yarn-bin-link:
-  alternatives.install:
-    - name: yarn
-    - link: /usr/bin/yarn
-    - path: {{ hadoop.prefix }}/bin/yarn
-    - priority: 30
-
-{%- if hadoop.cdhmr1 %}
-
-{{ hadoop.alt_home }}/share/hadoop/mapreduce:
+hadoop_etc_link:
   file.symlink:
-    - target: {{ hadoop.alt_home }}/share/hadoop/mapreduce1
-    - force: True
+    - name: /etc/hadoop
+    - target: {{ hadoop.home }}/etc/hadoop
 
-rename-bin:
-  cmd.run:
-    - name: mv {{ hadoop.alt_home }}/bin {{ hadoop.alt_home }}/bin-mapreduce2
-    - unless: test -L {{ hadoop.alt_home }}/bin
-
-rename-config:
-  cmd.run:
-    - name: mv {{ hadoop.alt_home }}/etc/hadoop {{ hadoop.alt_home }}/etc/hadoop-mapreduce2
-    - unless: test -L {{ hadoop.alt_home }}/etc/hadoop
-
-{{ hadoop.alt_home }}/bin:
+hadoop_bin_link:
   file.symlink:
-    - target: {{ hadoop.alt_home }}/bin-mapreduce1
-    - force: True
+    - name: /usr/bin/hadoop
+    - target: {{ hadoop.home }}/bin/hadoop
 
-{{ hadoop.alt_home }}/etc/hadoop:
+hdfs_bin_link:
   file.symlink:
-    - target: {{ hadoop.alt_home }}/etc/hadoop-mapreduce1
-    - force: True
+    - name: /usr/bin/hdfs
+    - target: {{ hadoop.home }}/bin/hdfs
 
-{%- endif %}
+# mapred-bin-link:
+#   alternatives.install:
+#     - name: mapred
+#     - link: /usr/bin/mapred
+#     - priority: 30
+#
+# yarn-bin-link:
+#   alternatives.install:
+#     - name: yarn
+#     - link: /usr/bin/yarn
+#     - priority: 30
 
-/etc/profile.d/hadoop.sh:
+hadoop_profile:
   file.managed:
+    - name: /etc/profile.d/hadoop.sh
     - source: salt://hadoop/files/hadoop.sh.jinja
     - template: jinja
     - mode: 644
     - user: root
     - group: root
-    - context:
-      hadoop_home: {{ hadoop.prefix }}
-      hadoop_config: {{ hadoop.config_dir }}
+    - defaults:
+        hadoop_home: {{ hadoop.home }}
+        hadoop_config: {{ hadoop.home }}/etc/hadoop
 
-{{ hadoop.config_dir }}:
-  file.directory:
-    - user: root
-    - group: root
-    - mode: 755
-
-{{ hadoop.config_dir }}/hadoop-env.sh:
+hadoop_hadoop-env:
   file.managed:
-    - source: salt://hadoop/conf/hadoop-env.sh
+    - name: {{ hadoop.home }}/etc/hadoop/hadoop-env.sh
+    - source: salt://hadoop/files/hadoop-env.sh
     - template: jinja
     - mode: 644
     - user: root
     - group: root
-    - context:
-      java_home: {{ hadoop.java_home }}
-      hadoop_home: {{ hadoop.prefix }}
-      hadoop_config: {{ hadoop.config_dir }}
-      hadoop_log_dir: {{ hadoop.log_root }}
-
-{%- if grains.os == 'Ubuntu' %}
-/etc/default/hadoop:
-  file.managed:
-    - source: salt://hadoop/files/hadoop.jinja
-    - mode: '644'
-    - template: jinja
-    - user: root
-    - group: root
-    - context:
-      java_home: {{ hadoop.java_home }}
-      hadoop_home: {{ hadoop.prefix }}
-      hadoop_config: {{ hadoop.config_dir }}
-{%- endif %}
+    - defaults:
+        hadoop_home: {{ hadoop.home }}
+        hadoop_config: {{ hadoop.home }}/etc/hadoop
+        hadoop_log_dir: {{ hadoop.log_dir }}

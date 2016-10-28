@@ -1,4 +1,3 @@
-export JAVA_HOME={{ java_home }}
 export HADOOP_PREFIX={{ hadoop_home }}
 export HADOOP_CONF_DIR={{ hadoop_config }}
 export PATH=$HADOOP_PREFIX/bin:$HADOOP_PREFIX/sbin:${JAVA_HOME}/bin:$PATH

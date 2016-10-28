@@ -1,0 +1,8 @@
+hadoop:
+  user: hadoop
+  group: hadoop
+  version: hadoop-2.7.3
+  source: 'http://archive.apache.org/dist/hadoop/core/hadoop-2.7.3/hadoop-2.7.3.tar.gz'
+  source_hash: sha1=b84b898934269c68753e4e036d21395e5a4ab5b1
+  install_dir: /opt
+  log_dir: /var/log/hadoop
