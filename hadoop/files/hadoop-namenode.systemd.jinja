@@ -1,0 +1,14 @@
+[Unit]
+Description=Hadoop hdfs Namenode
+After=network.target
+
+[Service]
+User={{ hadoop_user }}
+Group={{ hadoop_group }}
+EnvironmentFile={{ java_profile }}
+EnvironmentFile={{ hadoop_env }}
+ExecStart=/usr/bin/hdfs namenode
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target

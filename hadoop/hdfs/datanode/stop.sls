@@ -1,0 +1,2 @@
+hadoop-datanode:
+  service.dead: []

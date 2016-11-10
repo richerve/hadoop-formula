@@ -1,0 +1,7 @@
+name: hadoop
+os: Ubuntu
+os_family: Debian
+version: 0.0.1
+summary: Hadoop Saltstack formula
+description: Hadoop Saltstack formula
+top_level_dir: hadoop

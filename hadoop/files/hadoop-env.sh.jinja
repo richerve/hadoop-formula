@@ -1,0 +1,16 @@
+# The variables are declared first and then exported to be able to use this same file as environment for the systemd service units
+
+HADOOP_PREFIX={{ hadoop_home }}
+export HADOOP_PREFIX
+HADOOP_HOME=${HADOOP_PREFIX} # Present for backward compatibility. Not used any more
+export HADOOP_HOME
+HADOOP_LIBEXEC_DIR={{ hadoop_home }}/libexec
+export HADOOP_LIBEXEC_DIR
+HADOOP_CONF_DIR={{ hadoop_home }}/etc/hadoop
+export HADOOP_CONF_DIR
+HADOOP_USER={{ hadoop_user }}
+export HADOOP_USER
+HADOOP_LOG_DIR={{ hadoop_log_dir }}
+export HADOOP_LOG_DIR
+HADOOP_PID_DIR={{ hadoop_pid_dir }}
+export HADOOP_PID_DIR

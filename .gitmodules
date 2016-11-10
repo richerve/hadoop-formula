@@ -1,0 +1,3 @@
+[submodule "deps/java-formula"]
+	path = deps/java-formula
+	url = git@gitlab.com:HeyStaks/java-formula.git

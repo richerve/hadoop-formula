@@ -1,113 +1,20 @@
-# java_home: /usr/lib/java
-
 hadoop:
-  version: apache-1.2.1 # ['apache-1.2.1', 'apache-2.2.0', 'hdp-1.3.0', 'hdp-2.2.0', 'cdh-4.5.0', 'cdh-4.5.0-mr1']
-  targeting_method: grain # [compound, glob] also supported
-  users:
-    hadoop: 6000
-    hdfs: 6001
-    mapred: 6002
-    yarn: 6003
+  user: hadoop
+  group: hadoop
+  version: hadoop-2.7.3
+  source: 'http://archive.apache.org/dist/hadoop/core/hadoop-2.7.3/hadoop-2.7.3.tar.gz'
+  source_hash: sha1=b84b898934269c68753e4e036d21395e5a4ab5b1
+  install_dir: /opt
+  log_dir: /var/log/hadoop
+  pid_dir: /var/run/hadoop
+  java_profile: /etc/profile.d/java.sh
   config:
-    directory: /etc/hadoop/conf
-    core-site:
-      io.native.lib.available:
-        value: true
-      io.file.buffer.size:
-        value: 65536
-      fs.trash.interval:
-        value: 60
-
-hdfs:
-  namenode_target: "roles:hadoop_master" # Specify compound matching string to match all your namenodes
-  datanode_target: "roles:hadoop_slave" # Specify compound matching string to match all your datanodes e.g. if you were to use pillar I@datanode:true
-  config:
-    namenode_port: 8020
-    namenode_http_port: 50070
-    secondarynamenode_http_port: 50090
-    # the number of hdfs replicas is normally auto-configured for you in hdfs.settings
-    # according to the number of available datanodes
-    # replication: 1
-    hdfs-site:
-      dfs.permission:
-        value: false
-      dfs.durable.sync:
-        value: true
-      dfs.datanode.synconclose:
-        value: true
-
-mapred:
-  jobtracker_target: "roles:hadoop_master"
-  tasktracker_target: "roles:hadoop_slave"
-  config:
-    jobtracker_port: 9001
-    jobtracker_http_port: 50030
-    jobhistory_port: 10020
-    jobhistory_webapp_port: 19888
-    history_dir: /mr-history
-    mapred-site: 
-      mapred.map.memory.mb:
-        value: 1536
-      mapred.map.java.opts:
-        value: -Xmx1024M
-      mapred.reduce.memory.mb:
-        value: 3072
-      mapred.reduce.java.opts:
-        value: -Xmx1024m
-      mapred.task.io.sort.mb:
-        value: 512
-      mapred.task.io.sort.factor:
-        value: 100
-      mapred.reduce.shuffle.parallelcopies:
-        value: 50
-
-# you only have to configure the capacity-scheduler section to the extent you need it - if omitted the 
-# resulting file (HADOOP_CONF/capacity-scheduler.xml) will just remain empty (no defaults)
-yarn:
-  resourcemanager_target: "roles:hadoop_master"
-  nodemanager_target: "roles:hadoop_slave"
-  config:
-    yarn-site:
-      yarn.nodemanager.aux-services:
-        value: mapreduce_shuffle
-      yarn.nodemanager.aux-services.mapreduce.shuffle.class:
-        value: org.apache.hadoop.mapred.ShuffleHandler
-      yarn.resourcemanager.scheduler.class:
-        value: org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler
-    capacity-scheduler:
-      yarn.scheduler.capacity.maximum-applications:
-        value: 10000
-      yarn.scheduler.capacity.resource-calculator:
-        value: org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator
-      yarn.scheduler.capacity.root.queues:
-        value: default,customqueue
-      yarn.scheduler.capacity.root.capacity:
-        value: 100
-      yarn.scheduler.capacity.root.default.capacity:
-        value: 70
-      yarn.scheduler.capacity.root.default.user-limit-factor:
-        value: 1
-      yarn.scheduler.capacity.root.default.maximum-capacity:
-        value: 100
-      yarn.scheduler.capacity.root.default.state:
-        value: RUNNING
-      yarn.scheduler.capacity.root.default.acl_submit_applications:
-        value: '*'
-      yarn.scheduler.capacity.root.default.acl_administer_queue:
-        value: '*'
-      yarn.scheduler.capacity.root.customqueue.capacity:
-        value: 30
-      yarn.scheduler.capacity.root.customqueue.maximum-am-resource-percent:
-        value: 1.0
-      yarn.scheduler.capacity.root.customqueue.user-limit-factor:
-        value: 1
-      yarn.scheduler.capacity.root.customqueue.maximum-capacity:
-        value: 100
-      yarn.scheduler.capacity.root.customqueue.state:
-        value: RUNNING
-      yarn.scheduler.capacity.root.customqueue.acl_submit_applications:
-        value: '*'
-      yarn.scheduler.capacity.root.customqueue.acl_administer_queue:
-        value: '*'
-      yarn.scheduler.capacity.node-locality-delay:
-        value: -1
+    core:
+      fs.defaultFS: "hdfs://192.168.33.135"
+    hdfs:
+      dfs.namenode.name.dir: "file:///tmp/hdfs/nn"
+      dfs.namenode.datanode.registration.ip-hostname-check: "false"
+      dfs.replication: "1"
+      dfs.namenode.http-address: "192.168.33.135:50070"
+      dfs.namenode.secondary.http-address: "192.168.33.135:50090"
+      dfs.datanode.data.dir: "file:///tmp/hdfs/dn"

@@ -1,0 +1,14 @@
+[Unit]
+Description=Hadoop hdfs Datanode
+After=network.target
+
+[Service]
+EnvironmentFile={{ java_profile }}
+EnvironmentFile={{ hadoop_env }}
+ExecStart=/usr/bin/hdfs datanode
+User={{ hadoop_user }}
+Group={{ hadoop_group }}
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target

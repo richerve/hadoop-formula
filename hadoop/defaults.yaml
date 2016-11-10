@@ -6,3 +6,13 @@ hadoop:
   source_hash: sha1=b84b898934269c68753e4e036d21395e5a4ab5b1
   install_dir: /opt
   log_dir: /var/log/hadoop
+  pid_dir: /var/run/hadoop
+  java_profile: /etc/profile.d/java.sh
+  config:
+    core:
+      fs.defaultFS: "hdfs://localhost"
+    hdfs:
+      dfs.namenode.name.dir: "file:///tmp/hdfs/nn"
+      dfs.replication: "1"
+      dfs.namenode.http-address: "localhost:50070"
+      dfs.namenode.secondary.http-address: "localhost:50090"

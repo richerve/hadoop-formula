@@ -14,17 +14,50 @@ provisioner:
   name: salt_solo
   formula: hadoop
   require_chef: false
-  pillars-from-files:
-    hadoop.sls: pillar.example
-  pillars:
-    top.sls:
-      base:
-        '*':
-          - hadoop
-  state_top:
-    base:
-      '*':
-        - hadoop
+  dependencies:
+    - name: java
+      path: deps/java-formula
 
 suites:
   - name: default
+    provisioner:
+      state_top:
+        base:
+          '*':
+            - java
+            - hadoop.hdfs.namenode
+            - hadoop.hdfs.datanode
+  - name: namenode
+    driver:
+      network:
+        - ["private_network", {ip: "192.168.33.135"}]
+    provisioner:
+      state_top:
+        base:
+          '*':
+            - java
+            - hadoop.hdfs.namenode
+      pillars:
+        top.sls:
+          base:
+            '*':
+              - hadoop
+      pillars-from-files:
+        hadoop.sls: pillar.example
+  - name: datanode
+    driver:
+      network:
+        - ["private_network", {ip: "192.168.33.136"}]
+    provisioner:
+      state_top:
+        base:
+          '*':
+            - java
+            - hadoop.hdfs.datanode
+      pillars:
+        top.sls:
+          base:
+            '*':
+              - hadoop
+      pillars-from-files:
+        hadoop.sls: pillar.example

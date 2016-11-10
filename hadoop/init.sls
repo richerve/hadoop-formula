@@ -16,39 +16,19 @@ hadoop_log_dir:
     - user: {{hadoop.user}}
     - group: {{hadoop.group}}
     - mode: 775
+    - makedirs: True
     - require:
       - group: hadoop
-    - makedirs: True
 
 hadoop_run_dir:
   file.directory:
-    - name: /var/run/hadoop
+    - name: {{hadoop.pid_dir}}
     - user: {{hadoop.user}}
     - group: {{hadoop.group}}
     - mode: 775
+    - makedirs: True
     - require:
       - group: hadoop
-    - makedirs: True
-
-# hadoop_log_dir:
-#   file.directory:
-#     - mode: 775
-#     - names:
-#       - /var/run/hadoop
-#       - /var/lib/hadoop
-#     - require:
-#       - group: hadoop
-#     - makedirs: True
-
-# vm.swappiness:
-#   sysctl:
-#     - present
-#     - value: 0
-#
-# vm.overcommit_memory:
-#   sysctl:
-#     - present
-#     - value: 0
 
 hadoop_tarball:
   archive.extracted:
@@ -60,10 +40,10 @@ hadoop_tarball:
     - user: {{hadoop.user}}
     - group: {{hadoop.group}}
     - require_in:
+      - symlink: hadoop_etc_link
       - symlink: hadoop_bin_link
       - symlink: hdfs_bin_link
-      # - alternatives: mapred-bin-link
-      # - alternatives: yarn-bin-link
+      - symlink: hadoop_profile_link
 
 hadoop_etc_link:
   file.symlink:
@@ -80,39 +60,31 @@ hdfs_bin_link:
     - name: /usr/bin/hdfs
     - target: {{ hadoop.home }}/bin/hdfs
 
-# mapred-bin-link:
-#   alternatives.install:
-#     - name: mapred
-#     - link: /usr/bin/mapred
-#     - priority: 30
-#
-# yarn-bin-link:
-#   alternatives.install:
-#     - name: yarn
-#     - link: /usr/bin/yarn
-#     - priority: 30
-
-hadoop_profile:
-  file.managed:
-    - name: /etc/profile.d/hadoop.sh
-    - source: salt://hadoop/files/hadoop.sh.jinja
-    - template: jinja
-    - mode: 644
-    - user: root
-    - group: root
-    - defaults:
-        hadoop_home: {{ hadoop.home }}
-        hadoop_config: {{ hadoop.home }}/etc/hadoop
-
 hadoop_hadoop-env:
   file.managed:
     - name: {{ hadoop.home }}/etc/hadoop/hadoop-env.sh
-    - source: salt://hadoop/files/hadoop-env.sh
+    - source: salt://hadoop/files/hadoop-env.sh.jinja
     - template: jinja
-    - mode: 644
-    - user: root
-    - group: root
     - defaults:
+        hadoop_java_profile: {{ hadoop.java_profile }}
         hadoop_home: {{ hadoop.home }}
-        hadoop_config: {{ hadoop.home }}/etc/hadoop
         hadoop_log_dir: {{ hadoop.log_dir }}
+        hadoop_pid_dir: {{ hadoop.pid_dir }}
+        hadoop_user: {{ hadoop.user }}
+    - require:
+      - archive: hadoop_tarball
+
+hadoop_profile_link:
+  file.symlink:
+    - name: /etc/profile.d/hadoop.sh
+    - target: {{ hadoop.home }}/etc/hadoop/hadoop-env.sh
+
+hadoop_core-site:
+  file.managed:
+    - name: {{ hadoop.home }}/etc/hadoop/core-site.xml
+    - source: salt://hadoop/files/configuration.xml.jinja
+    - template: jinja
+    - defaults:
+        hadoop_config: {{ hadoop.config.core }}
+    - require:
+      - archive: hadoop_tarball
