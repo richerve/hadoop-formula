@@ -26,8 +26,7 @@ In practice is possible to use that same java formula to deploy it before the ha
 Default values
 ==============
 
-.. include:: hadoop/defaults.yaml
-   :code: yaml
+`hadoop/defaults.yaml`_
 
 .. note:: All the values can be overriden in pillar using the same structure
 
@@ -45,8 +44,11 @@ Available states
 - Symlink common files like configuration to etc, environment to /etc/profile.d and binaries to /usr/bin
 - Configure core-site.xml according to the options in *hadoop:config:core*
 
-Parameters (can be overriden in pillar)::
+Pillar parameters
+*****************
    
+.. code:: yaml
+
    hadoop:
      user: hadoop
      group: hadoop
@@ -66,10 +68,13 @@ Parameters (can be overriden in pillar)::
 
 Setup an HDFS namenode instance
 
-It includes `hadoop`_ to install the distribution if not present
+It includes `hadoop/init.sls`_ to install the distribution if not present
 
-Pillar parameters::
+Pillar parameters
+*****************
    
+.. code:: yaml
+
    hadoop:
      config:
        hdfs:
@@ -86,8 +91,11 @@ Setup an HDFS datanode instance
 
 It includes hadoop to install the distribution if not present
 
-Pillar parameters::
+Pillar parameters
+*****************
    
+.. code:: yaml
+          
    hadoop:
      config:
        hdfs:
@@ -96,8 +104,8 @@ Pillar parameters::
          dfs.namenode.http-address: "192.168.33.135:50070"
          dfs.namenode.secondary.http-address: "192.168.33.135:50090"
 
-Configuration
-=============
+Hadoop configuration handling
+=============================
 
 The hadoop formula exposes the general (cluster-independent) part of the main configuration files (core-site.xml, hdfs-site.sml) as pillar keys.
 
@@ -120,6 +128,12 @@ Where the *hdfs* part will appear in core-site.xml as::
         <value>1</value>
     </property>
 
+Example
+=======
+
+.. code:: shell
+
+   salt '*' state.apply hadoop
 
 Saltstack formulas
 ==================
