@@ -26,7 +26,9 @@ In practice is possible to use that same java formula to deploy it before the ha
 Default values
 ==============
 
-`hadoop/defaults.yaml`_
+`defaults.yaml`_
+
+.. _defaults.yaml: hadoop/defaults.yaml
 
 .. note:: All the values can be overriden in pillar using the same structure
 
