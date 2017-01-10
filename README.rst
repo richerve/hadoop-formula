@@ -111,24 +111,26 @@ Hadoop configuration handling
 
 The hadoop formula exposes the general (cluster-independent) part of the main configuration files (core-site.xml, hdfs-site.sml) as pillar keys.
 
-Example::
-
-    hadoop:
-      config:
+.. code:: yaml
+          
+   hadoop:
+     config:
        hdfs:
          dfs.datanode.data.dir: "file:///tmp/hdfs/dn"
          dfs.replication: "1"
 
 Where the *hdfs* part will appear in core-site.xml as::
 
-    <property>
-        <name>dfs.datanode.data.dir</name>
-        <value>file:///tmp/hdfs/dn</value>
-    </property>
-    <property>
-        <name>dfs.replication</name>
-        <value>1</value>
-    </property>
+.. code:: xml
+
+   <property>
+       <name>dfs.datanode.data.dir</name>
+       <value>file:///tmp/hdfs/dn</value>
+   </property>
+   <property>
+       <name>dfs.replication</name>
+       <value>1</value>
+   </property>
 
 Example
 =======
