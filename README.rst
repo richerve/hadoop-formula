@@ -119,7 +119,7 @@ The hadoop formula exposes the general (cluster-independent) part of the main co
          dfs.datanode.data.dir: "file:///tmp/hdfs/dn"
          dfs.replication: "1"
 
-Where the *hdfs* part will appear in core-site.xml as::
+Where the *hdfs* part will appear in core-site.xml as:
 
 .. code:: xml
 
